@@ -1,0 +1,51 @@
+image: cypress/browsers:22.13.1
+
+definitions:
+  caches:
+    yarn: ~/.cache/yarn
+  steps:
+      - step: &install-dependencies
+          name: Install dependencies with Yarn
+          caches:
+            - yarn
+          script:
+            - yarn install --frozen-lockfile
+
+      - step: &build-app
+          name: Build the app
+          script:
+            - yarn && yarn build
+
+      - step: &run-unit-tests
+          name: Run Unit tests
+          script:
+            - yarn && yarn test:unit
+
+      - step: &run-cypress-tests
+          name: Run Cypress tests
+          size: 2x
+          script:
+            - yarn && yarn dev & npx wait-on http://localhost:3000
+            - yarn test:e2e:headless
+          artifacts:
+            - cypress/screenshots/**/*.png
+            - cypress/videos/**/*.mp4
+
+      - step: &deploy-to-vercel
+          name: Deploy to Vercel (Production)
+          script:
+            - yarn global add vercel
+            - vercel --token $VERCEL_TOKEN --prod
+
+pipelines:
+  branches:
+    main:
+      - step: *install-dependencies
+      - step: *build-app
+      - step: *run-cypress-tests
+      - step: *deploy-to-vercel
+
+    development:
+      - step: *install-dependencies
+      - step: *run-unit-tests
+      - step: *run-cypress-tests
