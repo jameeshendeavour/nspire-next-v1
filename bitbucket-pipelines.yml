@@ -1,0 +1,61 @@
+image: cypress/base:18
+
+pipelines:
+  branches:
+    main:
+      - step:
+          name: Install dependencies with Yarn
+          caches:
+            - yarn
+          script:
+            - yarn install --frozen-lockfile
+
+      - step:
+          name: Build the app
+          script:
+            - yarn build
+
+      - step:
+          name: Run Cypress tests
+          size: 2x
+          script:
+            - yarn start & npx wait-on http://localhost:3000
+            - yarn e2e:headless
+          artifacts:
+            - cypress/screenshots/**/*.png
+            - cypress/videos/**/*.mp4
+
+      - step:
+          name: Deploy to Vercel (Production)
+          script:
+            - yarn global add vercel
+            - vercel --token $VERCEL_TOKEN --prod
+
+    development:
+      - step:
+          name: Install dependencies with Yarn
+          caches:
+            - yarn
+          script:
+            - yarn install --frozen-lockfile
+
+      - step:
+          name: Build the app
+          script:
+            - yarn build
+
+      - step:
+          name: Run Cypress tests
+          size: 2x
+          script:
+            - yarn start & npx wait-on http://localhost:3000
+            - yarn e2e:headless
+          artifacts:
+            - cypress/screenshots/**/*.png
+            - cypress/videos/**/*.mp4
+
+      - step:
+          name: Deploy to Vercel (Preview)
+          script:
+            - yarn global add vercel
+            - vercel --token $VERCEL_TOKEN
