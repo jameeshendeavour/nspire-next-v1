@@ -1,9 +1,8 @@
 image: cypress/base:18
 
-caches:
-  yarn: ~/.cache/yarn
-
 definitions:
+  caches:
+    yarn: ~/.cache/yarn
   steps:
       - step: &install-dependencies
           name: Install dependencies with Yarn
@@ -32,6 +31,7 @@ definitions:
           script:
             - yarn global add vercel
             - vercel --token $VERCEL_TOKEN --prod
+
 pipelines:
   branches:
     main:
