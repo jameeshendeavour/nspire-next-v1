@@ -1,5 +1,8 @@
 image: cypress/base:18
 
+caches:
+  yarn: ~/.cache/yarn
+
 definitions:
   steps:
       - step: &install-dependencies
